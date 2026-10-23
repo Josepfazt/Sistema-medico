@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Clínico Unificado - Salud Integral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-6">
+
+    <div id="loginCard" class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+        <div class="text-center mb-6">
+            <span class="text-3xl">🔒</span>
+            <h2 class="text-2xl font-bold text-slate-900 mt-2">Portal Médico Unificado</h2>
+            <p class="text-slate-500 text-xs mt-1">Válido para Pacientes, Médicos y Administradores</p>
+        </div>
+
+        <form id="formLogin" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo Registrado</label>
+                <input type="email" id="email" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Contraseña</label>
+                <input type="password" id="password" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none text-sm">
+            </div>
+            <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-lg shadow-md text-sm transition">Validar Credenciales</button>
+        </form>
+    </div>
+
+    <div id="tfaCard" class="hidden bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200 text-center">
+        <span class="text-4xl">📱</span>
+        <h3 class="text-2xl font-extrabold text-slate-900 mt-2">Verificación en Dos Pasos (2FA)</h3>
+        <p class="text-slate-500 text-xs mt-1 mb-4">Ingresa el token de seguridad generado en tu aplicación móvil.</p>
+
+        <div id="qrContainer" class="hidden bg-slate-50 p-4 rounded-xl mb-4 flex flex-col items-center">
+            <p class="text-xs text-amber-600 font-medium mb-2">⚠ Primer ingreso detectado: Escanea este QR con Google Authenticator</p>
+            <div id="qrPlaceholder" class="w-48 h-48 bg-slate-200 border flex items-center justify-center font-bold text-slate-400 text-xs">AQUÍ SE RENDERIZA EL QR</div>
+        </div>
+
+        <form id="form2FA" class="space-y-4">
+            <div>
+                <input type="text" id="tfaCode" placeholder="000 000" maxlength="6" required class="w-full text-center px-4 py-3 tracking-widest text-xl font-bold border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg shadow-md text-sm transition">Verificar y Entrar</button>
+        </form>
+    </div>
+
+    <script>
+        let userEmail = "";
+
+        // Petición de Login (Credenciales)
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    userEmail = data.email;
+                    // Ocultamos la caja de login y abrimos la de 2FA
+                    document.getElementById('loginCard').classList.add('hidden');
+                    document.getElementById('tfaCard').classList.remove('hidden');
+
+                    // Si trae URL de QR, significa que es la primera sincronización
+                    if (data.qrCodeUrl) {
+                        document.getElementById('qrContainer').classList.remove('hidden');
+                        // Renderizamos un QR estético usando una API de gráficos limpia de internet
+                        document.getElementById('qrPlaceholder').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data.qrCodeUrl)}" alt="QR 2FA">`;
+                    }
+                } else {
+                    alert(data.error || "Error de credenciales");
+                }
+            } catch(err) { alert("Error al contactar al backend."); }
+        });
+
+        // Petición de Validación 2FA final
+        document.getElementById('form2FA').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('tfaCode').value;
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/verify-2fa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, code: code })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    // Guardamos la sesión en el navegador local para pasarla a los dashboards
+                    localStorage.setItem('userId', data.userId);
+                    localStorage.setItem('userRol', data.rol);
+                    localStorage.setItem('userEmail', data.email);
+
+                    // Redirección controlada estricta dependiendo de su ROL único
+                    if (data.rol === 'PACIENTE') window.location.href = 'dashboard-paciente.html';
+                    else if (data.rol === 'MEDICO') window.location.href = 'dashboard-medico.html';
+                    else if (data.rol === 'ADMIN') window.location.href = 'dashboard-admin.html';
+                } else {
+                    alert(data.error || "Código de verificación erróneo");
+                }
+            } catch(err) { alert("Error en la autenticación."); }
+        });
+    </script>
+</body>
+</html>

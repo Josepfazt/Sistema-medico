@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Médico - Clínica Salud Integral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+            <div class="p-6">
+                <div class="flex items-center space-x-2 mb-8">
+                    <span class="text-2xl text-emerald-600 font-bold">✚ PortalMédico</span>
+                </div>
+                
+                <nav class="space-y-1">
+                    <button onclick="cambiarPestana('horarios')" id="btn-horarios" class="w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 transition">
+                        <span>🕒</span> <span>Gestión de Horario</span>
+                    </button>
+                    <button onclick="cambiarPestana('citas')" id="btn-citas" class="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition">
+                        <span>📅</span> <span>Gestión de Citas</span>
+                    </button>
+                    <button onclick="cambiarPestana('configuracion')" id="btn-configuracion" class="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition">
+                        <span>⚙</span> <span>Configuración</span>
+                    </button>
+                    <button onclick="cambiarPestana('perfil')" id="btn-perfil" class="w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition">
+                        <span>👤</span> <span>Mi Perfil</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-6 border-t border-slate-100 dark:border-slate-700">
+                <button onclick="cerrarSesion()" class="w-full bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 text-rose-600 dark:text-rose-400 text-sm font-bold py-2.5 rounded-xl transition flex items-center justify-center space-x-2">
+                    <span>🚪</span> <span>Cerrar Sesión</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-10 bg-slate-50 dark:bg-slate-900">
+            
+            <div id="pane-horarios" class="pane-content space-y-6">
+                <h2 class="text-2xl font-bold">Establecer Mi Disponibilidad Semanal</h2>
+                
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 max-w-3xl">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Día de la Semana</label>
+                            <select id="select-dia" class="w-full px-4 py-2 border rounded-lg dark:bg-slate-700 outline-none text-sm">
+                                <option value="Lunes">Lunes</option>
+                                <option value="Martes">Martes</option>
+                                <option value="Miércoles">Miércoles</option>
+                                <option value="Jueves">Jueves</option>
+                                <option value="Viernes">Viernes</option>
+                                <option value="Sábado">Sábado</option>
+                                <option value="Domingo">Domingo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Hora de Inicio</label>
+                            <input type="time" id="time-inicio" class="w-full px-4 py-2 border rounded-lg dark:bg-slate-700 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Hora de Fin</label>
+                            <input type="time" id="time-fin" class="w-full px-4 py-2 border rounded-lg dark:bg-slate-700 outline-none text-sm">
+                        </div>
+                    </div>
+                    <button onclick="guardarDisponibilidad()" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-6 py-2.5 rounded-lg shadow transition">Guardar Disponibilidad</button>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-lg font-bold">Horarios de Disponibilidad Registrados</h3>
+                    <div class="bg-white dark:bg-slate-800 shadow rounded-xl overflow-hidden max-w-3xl">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-100 dark:bg-slate-700 text-xs uppercase font-bold text-slate-700 dark:text-slate-300">
+                                <tr>
+                                    <th class="p-4">Día</th>
+                                    <th class="p-4">Entrada</th>
+                                    <th class="p-4">Salida</th>
+                                    <th class="p-4">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-mis-horarios" class="divide-y divide-slate-100 dark:divide-slate-700">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pane-citas" class="pane-content hidden space-y-4">
+                <h2 class="text-2xl font-bold">Control de Pacientes en Tiempo Real</h2>
+                <p class="text-slate-500 text-xs">Modifica el estado de tus consultas inmediatamente al ser ejecutadas o si se constata la inasistencia del paciente.</p>
+                
+                <div class="bg-white dark:bg-slate-800 shadow rounded-xl overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 dark:bg-slate-700 text-xs uppercase font-bold text-slate-700 dark:text-slate-300">
+                            <tr>
+                                <th class="p-4">Paciente</th>
+                                <th class="p-4">DNI</th>
+                                <th class="p-4">Fecha</th>
+                                <th class="p-4">Horario</th>
+                                <th class="p-4">Estado Actual</th>
+                                <th class="p-4 text-center">Acciones Real-Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-medico-citas" class="divide-y divide-slate-100 dark:divide-slate-700">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="pane-configuracion" class="pane-content hidden space-y-4">
+                <h2 class="text-2xl font-bold">Configuración de Pantalla</h2>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm flex justify-between items-center max-w-md">
+                    <div>
+                        <p class="font-bold text-sm">Tema Visual</p>
+                        <p class="text-xs text-slate-400">Alterna entre modo claro y oscuro de forma instantánea.</p>
+                    </div>
+                    <button onclick="toggleDarkMode()" class="w-14 h-8 bg-emerald-600 dark:bg-slate-600 rounded-full p-1 transition-colors duration-300 relative">
+                        <div class="w-6 h-6 bg-white rounded-full shadow-md transform duration-300 translate-x-6 dark:translate-x-0"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="pane-perfil" class="pane-content hidden max-w-xl space-y-6">
+                <h2 class="text-2xl font-bold">Ficha de Datos del Profesional</h2>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm grid grid-cols-2 gap-4 border border-slate-200 dark:border-slate-700">
+                    <div><span class="block text-xs font-bold text-slate-400 uppercase">Médico Especialista</span><p id="perf-nombres" class="text-sm font-semibold text-slate-500">...</p></div>
+                    <div><span class="block text-xs font-bold text-slate-400 uppercase">DNI Médico</span><p id="perf-dni" class="text-sm font-semibold text-slate-500">...</p></div>
+                    <div><span class="block text-xs font-bold text-slate-400 uppercase">Correo Corporativo</span><p id="perf-correo" class="text-sm font-semibold text-slate-500">...</p></div>
+                    <div><span class="block text-xs font-bold text-slate-400 uppercase">Teléfono</span><p id="perf-telefono" class="text-sm font-semibold text-slate-500">...</p></div>
+                </div>
+
+                <div class="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-6 rounded-xl space-y-3">
+                    <h4 class="text-amber-800 dark:text-amber-400 text-sm font-bold">¿Desea cambiar sus datos?</h4>
+                    <p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">Por razones de auditoría del Ministerio de Salud, la alteración masiva de expedientes está bloqueada.</p>
+                    <a href="https://wa.me/51999999999?text=deseo%20cambiar%20mis%20datos%20porfavor." target="_blank" class="inline-block bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm transition">Comuníquese con nuestro asesor</a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const medicoId = localStorage.getItem('userId');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!medicoId) { window.location.href = 'login.html'; }
+            cargarPerfil();
+            cargarMisHorarios();
+            cargarMisCitas();
+        });
+
+        function cambiarPestana(target) {
+            document.querySelectorAll('.pane-content').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`pane-${target}`).classList.remove('hidden');
+
+            document.querySelectorAll('aside nav button').forEach(b => {
+                b.classList.remove('bg-emerald-50', 'text-emerald-600', 'dark:bg-emerald-950/50', 'dark:text-emerald-400');
+                b.classList.add('text-slate-600', 'dark:text-slate-400');
+            });
+            document.getElementById(`btn-${target}`).classList.add('bg-emerald-50', 'text-emerald-600', 'dark:bg-emerald-950/50', 'dark:text-emerald-400');
+        }
+
+        function toggleDarkMode() { document.documentElement.classList.toggle('dark'); }
+
+        async function cargarPerfil() {
+            const res = await fetch(`http://localhost:8080/api/medico/perfil/${medicoId}`);
+            if (res.ok) {
+                const u = await res.json();
+                document.getElementById('perf-nombres').innerText = `Dr. ${u.nombres} ${u.apellidoPaterno}`;
+                document.getElementById('perf-dni').innerText = u.dni;
+                document.getElementById('perf-correo').innerText = u.email;
+                document.getElementById('perf-telefono').innerText = u.telefono;
+            }
+        }
+
+        // Registrar propuesta de disponibilidad
+        async function guardarDisponibilidad() {
+            const dia = document.getElementById('select-dia').value;
+            const inicio = document.getElementById('time-inicio').value;
+            const fin = document.getElementById('time-fin').value;
+
+            if(!inicio || !fin) { alert("Asigne las horas obligatoriamente"); return; }
+
+            const res = await fetch('http://localhost:8080/api/medico/disponibilidad', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    medicoId: parseInt(medicoId),
+                    diaSemana: dia,
+                    horaInicio: inicio + ":00",
+                    horaFin: fin + ":00"
+                })
+            });
+
+            if(res.ok) {
+                alert("Disponibilidad registrada correctamente. Queda en estado PENDIENTE hasta validación del administrador.");
+                cargarMisHorarios();
+            } else { alert("Error al procesar horario."); }
+        }
+
+        // Listar los horarios propuestos
+        async function cargarMisHorarios() {
+            const res = await fetch(`http://localhost:8080/api/medico/disponibilidades/${medicoId}`);
+            if(res.ok) {
+                const data = await res.json();
+                const tbody = document.getElementById('tabla-mis-horarios');
+                tbody.innerHTML = data.map(h => {
+                    const badge = h.estado === 'APROBADO' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
+                    return `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                            <td class="p-4 font-semibold">${h.diaSemana}</td>
+                            <td class="p-4">${h.horaInicio}</td>
+                            <td class="p-4">${h.horaFin}</td>
+                            <td class="p-4"><span class="px-2.5 py-1 text-xs font-bold ${badge} rounded-full">${h.estado}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Listar mis citas asignadas en tiempo real
+        async function cargarMisCitas() {
+            const res = await fetch(`http://localhost:8080/api/medico/citas/${medicoId}`);
+            if(res.ok) {
+                const data = await res.json();
+                const tbody = document.getElementById('tabla-medico-citas');
+                tbody.innerHTML = data.map(c => {
+                    let colorBadge = 'bg-amber-100 text-amber-800';
+                    if (c.estado === 'REALIZADO') colorBadge = 'bg-emerald-100 text-emerald-800';
+                    if (c.estado === 'NO_REALIZADO') colorBadge = 'bg-rose-100 text-rose-800';
+
+                    return `
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                            <td class="p-4 font-semibold">${c.paciente.nombres} ${c.paciente.apellidoPaterno}</td>
+                            <td class="p-4">${c.paciente.dni}</td>
+                            <td class="p-4">${c.fecha}</td>
+                            <td class="p-4 text-sky-600 font-medium">${c.horaInicio} - ${c.horaFin}</td>
+                            <td class="p-4"><span class="px-2.5 py-1 text-xs font-bold ${colorBadge} rounded-full">${c.estado}</span></td>
+                            <td class="p-4 flex justify-center space-x-2">
+                                <button onclick="actualizarEstadoCita(${c.id}, 'REALIZADO')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">REALIZADO</button>
+                                <button onclick="actualizarEstadoCita(${c.id}, 'NO_REALIZADO')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">NO REALIZADO</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Cambiar estado en BDD en Real-Time
+        async function actualizarEstadoCita(citaId, nuevoEstado) {
+            const res = await fetch(`http://localhost:8080/api/medico/cita/${citaId}/estado?estado=${nuevoEstado}`, {
+                method: 'PUT'
+            });
+            if (res.ok) {
+                cargarMisCitas(); // Refrescar en tiempo real
+            }
+        }
+
+        function cerrarSesion() { localStorage.clear(); window.location.href = 'login.html'; }
+    </script>
+</body>
+</html>
